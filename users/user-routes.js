@@ -42,6 +42,32 @@ userRoute.post("/login", (req, res) => {
 
 })
 
+const protected = (req, res, next) => {
+    const { username, password } = req.headers;
+
+        Users.findBy({username})
+        .first()
+        .then(user => {
+            if(user && bcrypt.compareSync(password, user.password)) {
+                next()
+            } else {
+                res.status(401).json({ message: "We don't recognize your secret handshake."})
+            }
+        })
+}
+
+userRoute.get("/users", protected, (req, res) => {
+    Users.retrieve()
+        .then(users => {
+            res.status(200).json(users)
+        })
+        .catch(error => {
+            res.status(500).json({ message: "Oops! Let's try that again."})
+        })
+})
+
+
+
 
 
 module.exports = userRoute;

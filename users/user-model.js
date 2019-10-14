@@ -16,8 +16,13 @@ const findBy = filter => {
     return db("users").where(filter);
 }
 
+const retrieve = () => {
+    return db("users");
+}
+
 module.exports = {
     add,
     findById, 
-    findBy
+    findBy,
+    retrieve
 }
