@@ -5,8 +5,13 @@
 
 const express = require("express");
 const server = express();
+const userRoute = require("./users/user-routes");
+
+server.use(express.json());
+server.use("/api", userRoute);
 
 const port = 2222;
+
 
 server.listen(port, () => {
     console.log(`Game on on port ${port}`)
