@@ -23,11 +23,13 @@ userRoute.post("/register", (req, res) => {
 
 userRoute.post("/login", (req, res) => {
     let { username, password } = req.body;
-    if (username && password) {
+
         Users.findBy({ username })
             .first()
             .then( user => {
                 if (user && bcrypt.compareSync(password, user.password)) {
+                    req.session.user = user.username;
+                    console.log(req.session);
                     res.status(200).json({ message: `Welcome, comrade ${user.username}`})
                 } else {
                     res.status(401).json({ message: "We don't recognize your secret handshake"})
@@ -36,24 +38,29 @@ userRoute.post("/login", (req, res) => {
             .catch(err => {
                 res.status(500).json({ message: "Oops. Technical difficulties on our part"})
             })        
-    } else {
-        res.status(400).json({ message: "please enter valid credentials"})
-    }
+
 
 })
 
 const protected = (req, res, next) => {
-    const { username, password } = req.headers;
+    // const { username, password } = req.headers;
 
-        Users.findBy({username})
-        .first()
-        .then(user => {
-            if(user && bcrypt.compareSync(password, user.password)) {
-                next()
-            } else {
-                res.status(401).json({ message: "We don't recognize your secret handshake."})
-            }
-        })
+        // Users.findBy({username})
+        // .first()
+        // .then(user => {
+        //     if(user && bcrypt.compareSync(password, user.password)) {
+        //         req.session.user = user.username;
+        //         next()
+        //     } else {
+        //         res.status(401).json({ message: "We don't recognize your secret handshake."})
+        //     }
+        // })
+        console.log(req.session)
+        if (req.session && req.session.user) {
+            next();
+        } else {
+            res.status(401).json({ message: "We don't know you around here."})
+        }
 }
 
 userRoute.get("/users", protected, (req, res) => {
@@ -66,6 +73,15 @@ userRoute.get("/users", protected, (req, res) => {
         })
 })
 
+userRoute.get("/logout", (req, res) => {
+    if (req.session) {
+        req.session.destroy();
+        res.send("Buh-bye");
+    } else {
+        res.status(401).json({ message: "can't log out if you weren't logged in"})
+    }
+        
+})
 
 
 
